@@ -1,5 +1,6 @@
 
-import { getCompletedLabs, getUserProgress } from "@/utils/dataUtils";
+import { useState, useEffect } from "react";
+import { getCompletedLabs, getUserProgress, type UserProgress } from "@/utils/dataUtils";
 import ProgressStats from "@/components/dashboard/ProgressStats";
 import CompletedLabs from "@/components/dashboard/CompletedLabs";
 import labs from "@/data/labs";
@@ -14,16 +15,39 @@ import {
 import { Link } from "react-router-dom";
 import { BookOpen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { type Lab } from "@/data/labs";
 
 const DashboardPage = () => {
-  // In a real app, we would fetch this data from an API
-  const userProgress = getUserProgress();
-  const completedLabs = getCompletedLabs();
+  const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
+  const [completedLabsData, setCompletedLabsData] = useState<{ lab: Lab; completedDate: Date }[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const progress = await getUserProgress();
+        setUserProgress(progress);
+        
+        const completedLabs = await getCompletedLabs();
+        setCompletedLabsData(completedLabs);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
   
   // Recommended labs - just a simple example
   const recommendedLabs = labs
-    .filter(lab => !userProgress.completedLabs.includes(lab.id))
+    .filter(lab => !userProgress?.completedLabs?.includes(lab.id))
     .slice(0, 3);
+  
+  if (loading) {
+    return <div className="container mx-auto px-4 py-12">Loading dashboard data...</div>;
+  }
   
   return (
     <div className="container mx-auto px-4 py-12">
@@ -32,11 +56,11 @@ const DashboardPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           <ProgressStats 
-            completedLabs={userProgress.completedLabs.length}
+            completedLabs={userProgress?.completedLabs?.length || 0}
             totalLabs={labs.length}
-            earnedBadges={userProgress.earnedBadges.length}
-            totalHours={userProgress.totalHours}
-            currentStreak={userProgress.currentStreak}
+            earnedBadges={userProgress?.earnedBadges?.length || 0}
+            totalHours={userProgress?.totalHours || 0}
+            currentStreak={userProgress?.currentStreak || 0}
           />
           
           <Card>
@@ -90,7 +114,7 @@ const DashboardPage = () => {
         </div>
         
         <div>
-          <CompletedLabs labs={completedLabs} />
+          <CompletedLabs labs={completedLabsData} />
         </div>
       </div>
     </div>

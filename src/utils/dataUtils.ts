@@ -39,18 +39,21 @@ export interface UserProgress {
   lastActive: Date;
 }
 
+// Default progress object to use when no data is available
+const defaultProgress: UserProgress = {
+  completedLabs: [],
+  labProgress: {},
+  earnedBadges: [],
+  totalHours: 0,
+  currentStreak: 0,
+  lastActive: new Date()
+};
+
 export const getUserProgress = async (): Promise<UserProgress> => {
   const token = localStorage.getItem('webseclearn_token');
   if (!token) {
     // Return mock data if not authenticated
-    return {
-      completedLabs: [],
-      labProgress: {},
-      earnedBadges: [],
-      totalHours: 0,
-      currentStreak: 0,
-      lastActive: new Date()
-    };
+    return defaultProgress;
   }
   
   try {
@@ -67,25 +70,29 @@ export const getUserProgress = async (): Promise<UserProgress> => {
     const data = await response.json();
     return {
       ...data,
-      lastActive: new Date(data.lastActive)
+      lastActive: new Date(data.lastActive),
+      // Ensure these properties are always defined
+      completedLabs: data.completedLabs || [],
+      labProgress: data.labProgress || {},
+      earnedBadges: data.earnedBadges || [],
+      totalHours: data.totalHours || 0,
+      currentStreak: data.currentStreak || 0
     };
   } catch (error) {
     console.error('Error fetching user progress:', error);
     // Return mock data as fallback
-    return {
-      completedLabs: [],
-      labProgress: {},
-      earnedBadges: [],
-      totalHours: 0,
-      currentStreak: 0,
-      lastActive: new Date()
-    };
+    return defaultProgress;
   }
 };
 
 export const getCompletedLabs = async (): Promise<{ lab: Lab, completedDate: Date }[]> => {
   try {
     const progress = await getUserProgress();
+    
+    if (!progress || !progress.completedLabs) {
+      return [];
+    }
+    
     const completedLabs = progress.completedLabs
       .map(labId => {
         const lab = getLabById(labId);
