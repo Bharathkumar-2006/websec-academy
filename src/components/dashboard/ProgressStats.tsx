@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Award, Clock, TrendingUp } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
+import { Progress } from "@/components/ui/progress"; // Assuming Progress component is available
 
 interface ProgressStatsProps {
   completedLabs: number;
@@ -31,7 +31,7 @@ const ProgressStats = () => {
         const res = await fetch("http://localhost:5000/api/progress", {
           method: "GET",
           headers: {
-            Authorization: `Bearer ${token}`, // Attach JWT token in the header
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });
@@ -39,7 +39,7 @@ const ProgressStats = () => {
         if (!res.ok) {
           if (res.status === 401) {
             setError("Unauthorized. Please log in again.");
-            localStorage.removeItem("token"); // Remove token on unauthorized
+            localStorage.removeItem("token");
           } else {
             throw new Error("Failed to fetch progress data.");
           }
@@ -57,7 +57,19 @@ const ProgressStats = () => {
     fetchProgress();
   }, []);
 
-  // Function to post progress (update progress)
+  // Triggering updateProgress as an example
+  // You can trigger this function whenever the user completes a lab, earns a badge, etc.
+  useEffect(() => {
+    // Example: Update progress (you would replace these values with real ones)
+    const completedLabs = 5;  // Example
+    const earnedBadges = 2;   // Example
+    const totalHours = 10;    // Example
+    const currentStreak = 3;  // Example
+
+    // This is just an example call. You can use it with real values when needed.
+    updateProgress(completedLabs, earnedBadges, totalHours, currentStreak);
+  }, []);
+
   const updateProgress = async (completedLabs: number, earnedBadges: number, totalHours: number, currentStreak: number) => {
     const token = localStorage.getItem("token");
 
@@ -67,7 +79,7 @@ const ProgressStats = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/api/progress", {
+      const res = await fetch("http://localhost:5000/api/progress/update-lab", {
         method: "POST",  // POST method for updating progress
         headers: {
           Authorization: `Bearer ${token}`,
@@ -96,18 +108,6 @@ const ProgressStats = () => {
       setError(err.message || "An error occurred");
     }
   };
-
-  // Triggering updateProgress as an example
-  // You can trigger this function whenever the user completes a lab, earns a badge, etc.
-  useEffect(() => {
-    // Example: Update progress (you would replace these values with real ones)
-    const completedLabs = 5;  // Example
-    const earnedBadges = 2;   // Example
-    const totalHours = 10;    // Example
-    const currentStreak = 3;  // Example
-
-    updateProgress(completedLabs, earnedBadges, totalHours, currentStreak);
-  }, []);
 
   if (loading) {
     return <p className="text-center text-gray-500">Loading your progress...</p>;

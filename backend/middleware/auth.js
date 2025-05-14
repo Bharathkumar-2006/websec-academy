@@ -1,4 +1,3 @@
-
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
@@ -10,7 +9,7 @@ const auth = async (req, res, next) => {
       return res.status(401).json({ message: 'Authentication required' });
     }
     
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); // Use JWT_SECRET from .env
     const user = await User.findById(decoded.userId);
     
     if (!user) {

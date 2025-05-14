@@ -18,11 +18,6 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/progress', progressRoutes);
 
-// Health check route
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Server is running' });
-});
-
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/webseclearn')
   .then(() => console.log('Connected to MongoDB'))

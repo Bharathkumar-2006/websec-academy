@@ -1,4 +1,3 @@
-
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
@@ -38,7 +37,7 @@ router.post('/register', async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       { userId: user._id },
-      process.env.JWT_SECRET || 'your-secret-key',
+      process.env.JWT_SECRET, // Use JWT_SECRET from .env
       { expiresIn: '7d' }
     );
     
@@ -75,10 +74,10 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
     
-    // Generate JWT
+    // Generate JWT token
     const token = jwt.sign(
       { userId: user._id },
-      process.env.JWT_SECRET || 'your-secret-key',
+      process.env.JWT_SECRET, // Use JWT_SECRET from .env
       { expiresIn: '7d' }
     );
     
