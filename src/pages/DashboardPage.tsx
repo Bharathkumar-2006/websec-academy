@@ -39,7 +39,7 @@ const DashboardPage = () => {
     fetchData();
   }, []);
   
-  // Recommended labs - just a simple example
+  // Recommended labs 
   const recommendedLabs = labs
     .filter(lab => !(userProgress?.completedLabs || []).includes(lab.id))
     .slice(0, 3);
