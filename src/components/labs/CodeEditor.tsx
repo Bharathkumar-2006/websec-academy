@@ -35,7 +35,7 @@ const CodeEditor = ({
         onExecute(code);
       }
       
-      // For demo purposes, we're just showing a simulated output
+      // For demo purposes
       if (code.includes("<script>") && code.includes("alert")) {
         setOutput("XSS vulnerability successfully exploited! Alert dialog would appear in a real scenario.");
       } else if (code.includes("' OR '1'='1")) {

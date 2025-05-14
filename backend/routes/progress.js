@@ -26,7 +26,6 @@ router.get('/', auth, async (req, res) => {
     progress.lastActive = new Date();
     await progress.save();
 
-    // Convert Map to object for labProgress
     const labProgressObject = {};
     progress.labProgress.forEach((value, key) => {
       labProgressObject[key] = value;
@@ -59,7 +58,7 @@ router.post('/complete-lab', auth, async (req, res) => {
 
     if (!progress.completedLabs.includes(labId)) {
       progress.completedLabs.push(labId);
-      progress.labProgress.delete(labId); // Remove from labProgress if exists
+      progress.labProgress.delete(labId); 
 
       const completedCount = progress.completedLabs.length;
 

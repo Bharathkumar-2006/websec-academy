@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Book, Clock } from "lucide-react";
 import { LearningPath } from "@/data/learningPaths";
 
-// Helper function to get color classes based on difficulty
+
 const getDifficultyColor = (difficulty: string) => {
   switch (difficulty) {
     case 'Beginner':
@@ -19,7 +19,7 @@ const getDifficultyColor = (difficulty: string) => {
   }
 };
 
-// Helper function to render the correct icon based on the path's icon string
+
 const renderIcon = (iconName: string) => {
   const iconMap: Record<string, JSX.Element> = {
     code: (
@@ -83,10 +83,10 @@ const renderIcon = (iconName: string) => {
     ),
   };
 
-  return iconMap[iconName] || iconMap.code; // Default to code icon if not found
+  return iconMap[iconName] || iconMap.code; 
 };
 
-// Helper function to get background color based on path color
+
 const getCardColor = (color: string) => {
   const colorMap: Record<string, string> = {
     blue: 'bg-blue-50',
@@ -102,7 +102,7 @@ const getCardColor = (color: string) => {
   return colorMap[color] || 'bg-gray-50';
 };
 
-// Helper function to get icon color based on path color
+
 const getIconColor = (color: string) => {
   const colorMap: Record<string, string> = {
     blue: 'text-blue-600',

@@ -11,7 +11,6 @@ router.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
     
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
@@ -26,8 +25,7 @@ router.post('/register', async (req, res) => {
     });
     
     await user.save();
-    
-    // Create progress record for user
+
     const progress = new Progress({
       user: user._id
     });
@@ -37,7 +35,7 @@ router.post('/register', async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       { userId: user._id },
-      process.env.JWT_SECRET, // Use JWT_SECRET from .env
+      process.env.JWT_SECRET, 
       { expiresIn: '7d' }
     );
     
@@ -77,7 +75,7 @@ router.post('/login', async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       { userId: user._id },
-      process.env.JWT_SECRET, // Use JWT_SECRET from .env
+      process.env.JWT_SECRET, 
       { expiresIn: '7d' }
     );
     

@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Tag } from "lucide-react";
 
-// Helper function to get color classes based on difficulty
+
 const getDifficultyColor = (difficulty: string) => {
   switch (difficulty) {
     case 'Beginner':
@@ -19,7 +19,6 @@ const getDifficultyColor = (difficulty: string) => {
   }
 };
 
-// Helper function to get category colors
 const getCategoryColor = (category: string) => {
   const categoryMap: Record<string, string> = {
     'Cross-Site Scripting': 'bg-blue-100 text-blue-800',

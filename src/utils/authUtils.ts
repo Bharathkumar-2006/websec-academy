@@ -1,7 +1,3 @@
-
-// This is a placeholder for actual authentication functionality
-// In a real app, this would connect to a backend service
-
 export interface User {
   id: string;
   name: string;
@@ -9,7 +5,7 @@ export interface User {
   profileImage?: string;
 }
 
-// Backend API URL - change this when deploying
+// Backend API URL
 const API_URL = 'http://localhost:5000/api';
 
 export const isAuthenticated = async (): Promise<boolean> => {

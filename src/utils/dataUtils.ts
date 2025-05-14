@@ -4,7 +4,7 @@ import { LearningPath } from "@/data/learningPaths";
 import labs from "@/data/labs";
 import learningPaths from "@/data/learningPaths";
 
-// Backend API URL - change this when deploying
+// Backend API URL
 const API_URL = 'http://localhost:5000/api';
 
 // Lab related functions
@@ -29,17 +29,17 @@ export const getLearningPathsByDifficulty = (difficulty: 'Beginner' | 'Intermedi
   return learningPaths.filter(path => path.difficulty === difficulty);
 };
 
-// User progress functions (now interacting with backend API)
+// User progress functions 
 export interface UserProgress {
   completedLabs: string[];
-  labProgress: Record<string, number>; // labId -> percentage complete
+  labProgress: Record<string, number>; 
   earnedBadges: string[];
   totalHours: number;
   currentStreak: number;
   lastActive: Date;
 }
 
-// Default progress object to use when no data is available
+
 const defaultProgress: UserProgress = {
   completedLabs: [],
   labProgress: {},
@@ -52,7 +52,7 @@ const defaultProgress: UserProgress = {
 export const getUserProgress = async (): Promise<UserProgress> => {
   const token = localStorage.getItem('webseclearn_token');
   if (!token) {
-    // Return mock data if not authenticated
+    
     return defaultProgress;
   }
   
@@ -71,7 +71,7 @@ export const getUserProgress = async (): Promise<UserProgress> => {
     return {
       ...data,
       lastActive: new Date(data.lastActive),
-      // Ensure these properties are always defined
+      
       completedLabs: data.completedLabs || [],
       labProgress: data.labProgress || {},
       earnedBadges: data.earnedBadges || [],
@@ -80,7 +80,7 @@ export const getUserProgress = async (): Promise<UserProgress> => {
     };
   } catch (error) {
     console.error('Error fetching user progress:', error);
-    // Return mock data as fallback
+    
     return defaultProgress;
   }
 };
@@ -98,7 +98,7 @@ export const getCompletedLabs = async (): Promise<{ lab: Lab, completedDate: Dat
         const lab = getLabById(labId);
         return lab ? { 
           lab, 
-          completedDate: new Date(Date.now() - Math.random() * 10 * 24 * 60 * 60 * 1000) // Random date within last 10 days
+          completedDate: new Date(Date.now() - Math.random() * 10 * 24 * 60 * 60 * 1000) 
         } : null;
       })
       .filter((item): item is { lab: Lab, completedDate: Date } => item !== null);

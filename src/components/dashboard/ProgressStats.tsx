@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Award, Clock, TrendingUp } from "lucide-react";
-import { Progress } from "@/components/ui/progress"; // Assuming Progress component is available
+import { Progress } from "@/components/ui/progress"; 
 
 interface ProgressStatsProps {
   completedLabs: number;
@@ -46,7 +46,7 @@ const ProgressStats = () => {
         }
 
         const data = await res.json();
-        setProgress(data); // Assuming the data returned matches ProgressStatsProps format
+        setProgress(data); 
       } catch (err: any) {
         setError(err.message || "An error occurred");
       } finally {
@@ -57,16 +57,14 @@ const ProgressStats = () => {
     fetchProgress();
   }, []);
 
-  // Triggering updateProgress as an example
-  // You can trigger this function whenever the user completes a lab, earns a badge, etc.
   useEffect(() => {
-    // Example: Update progress (you would replace these values with real ones)
-    const completedLabs = 5;  // Example
-    const earnedBadges = 2;   // Example
-    const totalHours = 10;    // Example
-    const currentStreak = 3;  // Example
+    
+    const completedLabs = 5;  
+    const earnedBadges = 2;   
+    const totalHours = 10;    
+    const currentStreak = 3;  
 
-    // This is just an example call. You can use it with real values when needed.
+    
     updateProgress(completedLabs, earnedBadges, totalHours, currentStreak);
   }, []);
 
@@ -90,7 +88,7 @@ const ProgressStats = () => {
           earnedBadges,
           totalHours,
           currentStreak,
-        }), // Send the updated progress data
+        }), 
       });
 
       if (!res.ok) {
@@ -103,7 +101,7 @@ const ProgressStats = () => {
       }
 
       const data = await res.json();
-      setProgress(data); // Assuming the data returned is the updated progress
+      setProgress(data); 
     } catch (err: any) {
       setError(err.message || "An error occurred");
     }

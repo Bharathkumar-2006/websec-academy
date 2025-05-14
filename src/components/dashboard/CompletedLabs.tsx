@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, RefreshCw } from "lucide-react";
-import { Badge } from "@/components/ui/badge"; // Assuming Badge component is available
-import { formatDate } from "@/utils/formatDate"; // Utility function for date formatting
+import { Badge } from "@/components/ui/badge"; 
+import { formatDate } from "@/utils/formatDate"; 
 
 const markLabAsCompleted = async (labId: string) => {
   const token = localStorage.getItem("token");
@@ -19,12 +19,12 @@ const markLabAsCompleted = async (labId: string) => {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ labId }), // Sending labId in body to mark as completed
+      body: JSON.stringify({ labId }), 
     });
 
     if (res.ok) {
       alert("Lab marked as completed!");
-      // Optionally, refresh the list or update state here
+      
     } else {
       throw new Error("Failed to update lab completion.");
     }

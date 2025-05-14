@@ -44,7 +44,6 @@ const Hero = () => {
                   <div className="h-3 w-3 rounded-full bg-green-500"></div>
                 </div>
                 <div className="text-gray-800">
-                  <span className="text-blue-600">$</span> <span className="text-green-600">curl</span> -X POST https://api.example.com/login<br />
                   <span className="text-red-600">-d</span> <span className="text-purple-600">{'{"username": "admin", "password": "' }<span className="text-websec-purple font-semibold">OR 1=1 --</span>{'}"'}</span><br />
                   <span className="text-gray-600"># Executing SQL injection...</span><br />
                   <span className="text-websec-purple">Authentication bypass successful!</span><br />
