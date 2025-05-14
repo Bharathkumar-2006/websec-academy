@@ -9,40 +9,72 @@ export interface User {
   profileImage?: string;
 }
 
-export const isAuthenticated = (): boolean => {
-  // In a real app, check if the user has a valid token or session
-  return localStorage.getItem('webseclearn_user') !== null;
-};
+// Backend API URL - change this when deploying
+const API_URL = 'http://localhost:5000/api';
 
-export const getCurrentUser = (): User | null => {
-  const userJson = localStorage.getItem('webseclearn_user');
-  if (!userJson) return null;
+export const isAuthenticated = async (): Promise<boolean> => {
+  const token = localStorage.getItem('webseclearn_token');
+  if (!token) return false;
   
   try {
-    return JSON.parse(userJson) as User;
+    const response = await fetch(`${API_URL}/auth/validate`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    return response.ok;
   } catch (error) {
-    console.error('Error parsing user data:', error);
+    console.error('Auth validation error:', error);
+    return false;
+  }
+};
+
+export const getCurrentUser = async (): Promise<User | null> => {
+  const token = localStorage.getItem('webseclearn_token');
+  if (!token) return null;
+  
+  try {
+    const response = await fetch(`${API_URL}/auth/user`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to get current user');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Get current user error:', error);
     return null;
   }
 };
 
 export const login = async (email: string, password: string): Promise<User> => {
-  // In a real app, this would make an API call to authenticate
-  // For demo purposes, we'll just simulate a successful login
-  
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  const mockUser: User = {
-    id: '123456',
-    name: 'Demo User',
-    email: email,
-    profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'
-  };
-  
-  localStorage.setItem('webseclearn_user', JSON.stringify(mockUser));
-  
-  return mockUser;
+  try {
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Login failed');
+    }
+    
+    const data = await response.json();
+    localStorage.setItem('webseclearn_token', data.token);
+    
+    return data.user;
+  } catch (error: any) {
+    console.error('Login error:', error);
+    throw new Error(error.message || 'Login failed. Please try again.');
+  }
 };
 
 export const register = async (
@@ -50,24 +82,30 @@ export const register = async (
   email: string,
   password: string
 ): Promise<User> => {
-  // In a real app, this would make an API call to register a new user
-  // For demo purposes, we'll just simulate a successful registration
-  
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  const mockUser: User = {
-    id: '123456',
-    name: name,
-    email: email,
-    profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka'
-  };
-  
-  localStorage.setItem('webseclearn_user', JSON.stringify(mockUser));
-  
-  return mockUser;
+  try {
+    const response = await fetch(`${API_URL}/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ name, email, password })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Registration failed');
+    }
+    
+    const data = await response.json();
+    localStorage.setItem('webseclearn_token', data.token);
+    
+    return data.user;
+  } catch (error: any) {
+    console.error('Registration error:', error);
+    throw new Error(error.message || 'Registration failed. Please try again.');
+  }
 };
 
 export const logout = (): void => {
-  localStorage.removeItem('webseclearn_user');
+  localStorage.removeItem('webseclearn_token');
 };

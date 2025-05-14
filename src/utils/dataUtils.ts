@@ -4,6 +4,9 @@ import { LearningPath } from "@/data/learningPaths";
 import labs from "@/data/labs";
 import learningPaths from "@/data/learningPaths";
 
+// Backend API URL - change this when deploying
+const API_URL = 'http://localhost:5000/api';
+
 // Lab related functions
 export const getLabById = (labId: string): Lab | undefined => {
   return labs.find(lab => lab.id === labId);
@@ -26,7 +29,7 @@ export const getLearningPathsByDifficulty = (difficulty: 'Beginner' | 'Intermedi
   return learningPaths.filter(path => path.difficulty === difficulty);
 };
 
-// User progress functions (in a real app, these would interact with backend API)
+// User progress functions (now interacting with backend API)
 export interface UserProgress {
   completedLabs: string[];
   labProgress: Record<string, number>; // labId -> percentage complete
@@ -36,34 +39,108 @@ export interface UserProgress {
   lastActive: Date;
 }
 
-export const getUserProgress = (): UserProgress => {
-  // In a real app, this would fetch from an API or localStorage
-  const mockProgress: UserProgress = {
-    completedLabs: ["xss-reflected", "sqli-login", "broken-auth"],
-    labProgress: {
-      "xss-stored": 60,
-      "csrf-profile": 30,
-    },
-    earnedBadges: ["xss-master", "sql-novice", "auth-novice"],
-    totalHours: 12,
-    currentStreak: 3,
-    lastActive: new Date()
-  };
+export const getUserProgress = async (): Promise<UserProgress> => {
+  const token = localStorage.getItem('webseclearn_token');
+  if (!token) {
+    // Return mock data if not authenticated
+    return {
+      completedLabs: [],
+      labProgress: {},
+      earnedBadges: [],
+      totalHours: 0,
+      currentStreak: 0,
+      lastActive: new Date()
+    };
+  }
   
-  return mockProgress;
+  try {
+    const response = await fetch(`${API_URL}/progress`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch user progress');
+    }
+    
+    const data = await response.json();
+    return {
+      ...data,
+      lastActive: new Date(data.lastActive)
+    };
+  } catch (error) {
+    console.error('Error fetching user progress:', error);
+    // Return mock data as fallback
+    return {
+      completedLabs: [],
+      labProgress: {},
+      earnedBadges: [],
+      totalHours: 0,
+      currentStreak: 0,
+      lastActive: new Date()
+    };
+  }
 };
 
-export const getCompletedLabs = (): { lab: Lab, completedDate: Date }[] => {
-  const progress = getUserProgress();
-  const completedLabs = progress.completedLabs
-    .map(labId => {
-      const lab = getLabById(labId);
-      return lab ? { 
-        lab, 
-        completedDate: new Date(Date.now() - Math.random() * 10 * 24 * 60 * 60 * 1000) // Random date within last 10 days
-      } : null;
-    })
-    .filter((item): item is { lab: Lab, completedDate: Date } => item !== null);
+export const getCompletedLabs = async (): Promise<{ lab: Lab, completedDate: Date }[]> => {
+  try {
+    const progress = await getUserProgress();
+    const completedLabs = progress.completedLabs
+      .map(labId => {
+        const lab = getLabById(labId);
+        return lab ? { 
+          lab, 
+          completedDate: new Date(Date.now() - Math.random() * 10 * 24 * 60 * 60 * 1000) // Random date within last 10 days
+        } : null;
+      })
+      .filter((item): item is { lab: Lab, completedDate: Date } => item !== null);
+    
+    return completedLabs;
+  } catch (error) {
+    console.error('Error getting completed labs:', error);
+    return [];
+  }
+};
+
+export const completeLabProgress = async (labId: string): Promise<boolean> => {
+  const token = localStorage.getItem('webseclearn_token');
+  if (!token) return false;
   
-  return completedLabs;
+  try {
+    const response = await fetch(`${API_URL}/progress/complete-lab`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ labId })
+    });
+    
+    return response.ok;
+  } catch (error) {
+    console.error('Error completing lab:', error);
+    return false;
+  }
+};
+
+export const updateLabProgress = async (labId: string, percentage: number): Promise<boolean> => {
+  const token = localStorage.getItem('webseclearn_token');
+  if (!token) return false;
+  
+  try {
+    const response = await fetch(`${API_URL}/progress/update-lab`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ labId, percentage })
+    });
+    
+    return response.ok;
+  } catch (error) {
+    console.error('Error updating lab progress:', error);
+    return false;
+  }
 };
