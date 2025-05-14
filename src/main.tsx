@@ -18,5 +18,4 @@ try {
   root.render(<App />);
 } catch (error) {
   console.error('Failed to render the application:', error);
-  // Could render a fallback error UI here
 }

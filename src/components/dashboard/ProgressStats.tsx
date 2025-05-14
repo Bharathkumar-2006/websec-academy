@@ -17,6 +17,7 @@ const ProgressStats = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    // Function to fetch progress
     const fetchProgress = async () => {
       const token = localStorage.getItem("token");
 
@@ -54,6 +55,58 @@ const ProgressStats = () => {
     };
 
     fetchProgress();
+  }, []);
+
+  // Function to post progress (update progress)
+  const updateProgress = async (completedLabs: number, earnedBadges: number, totalHours: number, currentStreak: number) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setError("Unauthorized. Please login.");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:5000/api/progress", {
+        method: "POST",  // POST method for updating progress
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          completedLabs,
+          earnedBadges,
+          totalHours,
+          currentStreak,
+        }), // Send the updated progress data
+      });
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          setError("Unauthorized. Please log in again.");
+          localStorage.removeItem("token");
+        } else {
+          throw new Error("Failed to update progress.");
+        }
+      }
+
+      const data = await res.json();
+      setProgress(data); // Assuming the data returned is the updated progress
+    } catch (err: any) {
+      setError(err.message || "An error occurred");
+    }
+  };
+
+  // Triggering updateProgress as an example
+  // You can trigger this function whenever the user completes a lab, earns a badge, etc.
+  useEffect(() => {
+    // Example: Update progress (you would replace these values with real ones)
+    const completedLabs = 5;  // Example
+    const earnedBadges = 2;   // Example
+    const totalHours = 10;    // Example
+    const currentStreak = 3;  // Example
+
+    updateProgress(completedLabs, earnedBadges, totalHours, currentStreak);
   }, []);
 
   if (loading) {
