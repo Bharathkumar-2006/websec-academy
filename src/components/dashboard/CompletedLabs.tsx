@@ -33,8 +33,19 @@ const markLabAsCompleted = async (labId: string) => {
   }
 };
 
+interface Lab {
+  id: string;
+  title: string;
+  category: string;
+}
+
+interface CompletedLab {
+  lab: Lab;
+  completedDate: string;
+}
+
 const CompletedLabs = () => {
-  const [labs, setLabs] = useState<any[]>([]);
+  const [labs, setLabs] = useState<CompletedLab[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 

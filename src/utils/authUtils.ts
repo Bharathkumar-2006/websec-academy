@@ -67,9 +67,13 @@ export const login = async (email: string, password: string): Promise<User> => {
     localStorage.setItem('webseclearn_token', data.token);
     
     return data.user;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Login error:', error);
-    throw new Error(error.message || 'Login failed. Please try again.');
+    if (error instanceof Error) {
+      throw new Error(error.message || 'Login failed. Please try again.');
+    } else {
+      throw new Error('Login failed. Please try again.');
+    }
   }
 };
 
@@ -96,9 +100,13 @@ export const register = async (
     localStorage.setItem('webseclearn_token', data.token);
     
     return data.user;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Registration error:', error);
-    throw new Error(error.message || 'Registration failed. Please try again.');
+    if (error instanceof Error) {
+      throw new Error(error.message || 'Registration failed. Please try again.');
+    } else {
+      throw new Error('Registration failed. Please try again.');
+    }
   }
 };
 
