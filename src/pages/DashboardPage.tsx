@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { getCompletedLabs, getUserProgress, type UserProgress } from "@/utils/dataUtils";
 import ProgressStats from "@/components/dashboard/ProgressStats";
@@ -42,13 +41,17 @@ const DashboardPage = () => {
   
   // Recommended labs - just a simple example
   const recommendedLabs = labs
-    .filter(lab => !userProgress?.completedLabs?.includes(lab.id))
+    .filter(lab => !(userProgress?.completedLabs || []).includes(lab.id))
     .slice(0, 3);
   
   if (loading) {
     return <div className="container mx-auto px-4 py-12">Loading dashboard data...</div>;
   }
-  
+
+  if (!userProgress) {
+    return <div className="container mx-auto px-4 py-12">Error: User data is unavailable</div>;
+  }
+
   return (
     <div className="container mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-6">Your Dashboard</h1>
@@ -80,7 +83,7 @@ const DashboardPage = () => {
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
                         <h4 className="font-medium">{lab.title}</h4>
-                        <Badge className={
+                        <Badge className={ 
                           lab.difficulty === 'Beginner' ? 'bg-green-100 text-green-800' :
                           lab.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-800' :
                           'bg-red-100 text-red-800'

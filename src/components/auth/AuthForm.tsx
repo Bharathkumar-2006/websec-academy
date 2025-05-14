@@ -1,11 +1,22 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from "@/components/ui/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 
 const AuthForm = () => {
@@ -13,34 +24,76 @@ const AuthForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Logged in successfully",
-        description: "Welcome back to WebSecLearn!",
-      });
-      navigate("/dashboard");
-    }, 1500);
-  };
-  
+  // Handle Register
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
+
+    const name = (document.getElementById("register-name") as HTMLInputElement).value;
+    const email = (document.getElementById("register-email") as HTMLInputElement).value;
+    const password = (document.getElementById("register-password") as HTMLInputElement).value;
+    const passwordConfirm = (document.getElementById("register-password-confirm") as HTMLInputElement).value;
+
+    if (password !== passwordConfirm) {
+      toast({ title: "Error", description: "Passwords do not match." });
       setIsLoading(false);
-      toast({
-        title: "Account created successfully",
-        description: "Welcome to WebSecLearn!",
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
       });
-      navigate("/dashboard");
-    }, 1500);
+
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem("token", data.token);
+        toast({ title: "Account created successfully", description: "Welcome to WebSecLearn!" });
+        navigate("/dashboard");
+      } else {
+        toast({ title: "Registration failed", description: data.message });
+      }
+    } catch (err) {
+      console.error("Registration error:", err);
+      toast({ title: "Error", description: "Something went wrong." });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle Login
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const email = (document.getElementById("email") as HTMLInputElement).value;
+    const password = (document.getElementById("password") as HTMLInputElement).value;
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem("token", data.token);
+        toast({ title: "Logged in successfully", description: "Welcome back!" });
+        navigate("/dashboard");
+      } else {
+        toast({ title: "Login failed", description: data.message });
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      toast({ title: "Error", description: "Something went wrong." });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -54,11 +107,10 @@ const AuthForm = () => {
               <TabsTrigger value="register">Register</TabsTrigger>
             </TabsList>
           </div>
-          <CardDescription>
-            Access your WebSecLearn account
-          </CardDescription>
+          <CardDescription>Access your WebSecLearn account</CardDescription>
         </CardHeader>
 
+        {/* Login Tab */}
         <TabsContent value="login">
           <form onSubmit={handleLogin}>
             <CardContent className="space-y-4">
@@ -77,9 +129,9 @@ const AuthForm = () => {
               </div>
             </CardContent>
             <CardFooter>
-              <Button 
-                type="submit" 
-                className="w-full bg-websec-purple hover:bg-websec-purple-dark" 
+              <Button
+                type="submit"
+                className="w-full bg-websec-purple hover:bg-websec-purple-dark"
                 disabled={isLoading}
               >
                 {isLoading ? "Logging in..." : "Log in"}
@@ -88,6 +140,7 @@ const AuthForm = () => {
           </form>
         </TabsContent>
 
+        {/* Register Tab */}
         <TabsContent value="register">
           <form onSubmit={handleRegister}>
             <CardContent className="space-y-4">
@@ -109,9 +162,9 @@ const AuthForm = () => {
               </div>
             </CardContent>
             <CardFooter>
-              <Button 
-                type="submit" 
-                className="w-full bg-websec-purple hover:bg-websec-purple-dark" 
+              <Button
+                type="submit"
+                className="w-full bg-websec-purple hover:bg-websec-purple-dark"
                 disabled={isLoading}
               >
                 {isLoading ? "Creating Account..." : "Create Account"}

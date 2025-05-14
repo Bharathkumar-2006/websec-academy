@@ -1,16 +1,6 @@
-
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import {
-  CheckCircle,
-  Award,
-  Clock,
-  TrendingUp
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CheckCircle, Award, Clock, TrendingUp } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 interface ProgressStatsProps {
@@ -21,19 +11,70 @@ interface ProgressStatsProps {
   currentStreak: number;
 }
 
-const ProgressStats = ({
-  completedLabs,
-  totalLabs,
-  earnedBadges,
-  totalHours,
-  currentStreak
-}: ProgressStatsProps) => {
+const ProgressStats = () => {
+  const [progress, setProgress] = useState<ProgressStatsProps | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchProgress = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setError("Unauthorized. Please login.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch("http://localhost:5000/api/progress", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`, // Attach JWT token in the header
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            setError("Unauthorized. Please log in again.");
+            localStorage.removeItem("token"); // Remove token on unauthorized
+          } else {
+            throw new Error("Failed to fetch progress data.");
+          }
+        }
+
+        const data = await res.json();
+        setProgress(data); // Assuming the data returned matches ProgressStatsProps format
+      } catch (err: any) {
+        setError(err.message || "An error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProgress();
+  }, []);
+
+  if (loading) {
+    return <p className="text-center text-gray-500">Loading your progress...</p>;
+  }
+
+  if (error) {
+    return <p className="text-center text-red-500">{error}</p>;
+  }
+
+  if (!progress) {
+    return <p className="text-center text-gray-500">No progress data available.</p>;
+  }
+
+  const { completedLabs, totalLabs, earnedBadges, totalHours, currentStreak } = progress;
   const completionPercentage = Math.round((completedLabs / totalLabs) * 100);
 
   return (
     <div className="space-y-6">
       <h3 className="text-xl font-semibold">Your Progress</h3>
-      
+
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">Lab Completion</CardTitle>
@@ -46,7 +87,7 @@ const ProgressStats = ({
           <Progress value={completionPercentage} className="h-2" />
         </CardContent>
       </Card>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardContent className="p-4">
@@ -61,7 +102,7 @@ const ProgressStats = ({
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
@@ -75,7 +116,7 @@ const ProgressStats = ({
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
@@ -89,7 +130,7 @@ const ProgressStats = ({
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
