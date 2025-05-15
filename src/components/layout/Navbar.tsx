@@ -18,7 +18,7 @@ const Navbar = () => {
     
     checkAuth();
     
-    // Listen for authentication changes
+    
     window.addEventListener('storage', (event) => {
       if (event.key === 'webseclearn_token') {
         checkAuth();
