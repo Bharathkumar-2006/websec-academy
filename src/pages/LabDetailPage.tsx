@@ -1,13 +1,13 @@
 
 import { useParams, Link } from "react-router-dom";
-import { getLabById } from "@/utils/dataUtils";
+import { getLabById, completeLabProgress } from "@/utils/dataUtils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Clock, Target, CheckCircle } from "lucide-react";
 import CodeEditor from "@/components/labs/CodeEditor";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Separator } from "@/components/ui/separator";
 
 const LabDetailPage = () => {
@@ -45,14 +45,35 @@ const LabDetailPage = () => {
     });
   };
   
-  const handleExecute = (code: string) => {
+  const handleExecute = async (code: string) => {
     if (code.includes(lab.title.toLowerCase().includes("xss") ? "<script>" : "' OR '1'='1")) {
       if (!isCompleted) {
         setIsCompleted(true);
-        toast({
-          title: "Congratulations!",
-          description: "You've successfully completed this lab!",
-        });
+        
+        // Call the backend to mark the lab as completed
+        try {
+          const success = await completeLabProgress(lab.id);
+          
+          if (success) {
+            toast({
+              title: "Congratulations!",
+              description: "You've successfully completed this lab!",
+            });
+          } else {
+            toast({
+              title: "Error",
+              description: "There was an issue recording your completion. Please try again.",
+              variant: "destructive",
+            });
+          }
+        } catch (error) {
+          console.error("Error completing lab:", error);
+          toast({
+            title: "Error",
+            description: "There was an issue recording your completion. Please try again.",
+            variant: "destructive",
+          });
+        }
       }
     }
   };

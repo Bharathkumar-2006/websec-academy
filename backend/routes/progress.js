@@ -1,3 +1,4 @@
+
 const express = require('express');
 const Progress = require('../models/Progress');
 const auth = require('../middleware/auth');
@@ -54,6 +55,8 @@ router.post('/complete-lab', auth, async (req, res) => {
       return res.status(400).json({ message: 'Lab ID is required' });
     }
 
+    console.log(`Completing lab ${labId} for user ${req.user._id}`);
+
     let progress = await getOrCreateProgress(req.user._id);
 
     if (!progress.completedLabs.includes(labId)) {
@@ -76,7 +79,23 @@ router.post('/complete-lab', auth, async (req, res) => {
       }
 
       progress.totalHours += 0.5; // Add hours for completed lab
-      progress.currentStreak = (new Date() - new Date(progress.lastActive)) <= 1 ? progress.currentStreak + 1 : 1;
+      
+      // Fix the streak logic to properly check if the user was active yesterday
+      const lastActiveDate = progress.lastActive ? new Date(progress.lastActive) : null;
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      if (lastActiveDate) {
+        const isActiveYesterday = 
+          lastActiveDate.getDate() === yesterday.getDate() && 
+          lastActiveDate.getMonth() === yesterday.getMonth() && 
+          lastActiveDate.getFullYear() === yesterday.getFullYear();
+        
+        progress.currentStreak = isActiveYesterday ? progress.currentStreak + 1 : 1;
+      } else {
+        progress.currentStreak = 1;
+      }
 
       progress.lastActive = new Date();
       await progress.save();
