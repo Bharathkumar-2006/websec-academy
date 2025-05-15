@@ -70,7 +70,7 @@ const AuthForm = () => {
       await login(email, password);
       toast({ title: "Logged in successfully", description: "Welcome back!" });
       
-      // Trigger a storage event to update navbar state
+      
       window.dispatchEvent(new Event('storage'));
       
       navigate("/dashboard");
