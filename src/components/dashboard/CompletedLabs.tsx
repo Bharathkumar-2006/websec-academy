@@ -1,101 +1,44 @@
-import { useEffect, useState } from "react";
+
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle, RefreshCw } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge"; 
 import { formatDate } from "@/utils/formatDate"; 
+import { Lab } from "@/data/labs";
+import { completeLabProgress } from "@/utils/dataUtils";
+import { useToast } from "@/hooks/use-toast";
 
-const markLabAsCompleted = async (labId: string) => {
-  const token = localStorage.getItem("token");
+interface CompletedLabProps {
+  labs: { lab: Lab; completedDate: Date }[];
+}
 
-  if (!token) {
-    alert("Unauthorized. Please login.");
-    return;
-  }
+const CompletedLabs = ({ labs }: CompletedLabProps) => {
+  const { toast } = useToast();
 
-  try {
-    const res = await fetch("http://localhost:5000/api/progress/complete-lab", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ labId }), 
-    });
-
-    if (res.ok) {
-      alert("Lab marked as completed!");
+  const handleMarkLabAsCompleted = async (labId: string) => {
+    try {
+      const success = await completeLabProgress(labId);
       
-    } else {
-      throw new Error("Failed to update lab completion.");
-    }
-  } catch (err) {
-    alert(err.message || "An error occurred");
-  }
-};
-
-interface Lab {
-  id: string;
-  title: string;
-  category: string;
-}
-
-interface CompletedLab {
-  lab: Lab;
-  completedDate: string;
-}
-
-const CompletedLabs = () => {
-  const [labs, setLabs] = useState<CompletedLab[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    const fetchCompletedLabs = async () => {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        setError("Unauthorized. Please login.");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const res = await fetch("http://localhost:5000/api/progress", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+      if (success) {
+        toast({
+          title: "Success",
+          description: "Lab completion status updated.",
         });
-
-        if (!res.ok) {
-          if (res.status === 401) {
-            setError("Unauthorized. Please log in again.");
-            localStorage.removeItem("token");
-          } else {
-            throw new Error("Failed to fetch completed labs.");
-          }
-        }
-
-        const data = await res.json();
-        setLabs(data.completedLabs);
-      } catch (err) {
-        setError(err.message || "An error occurred");
-      } finally {
-        setLoading(false);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update lab completion status.",
+          variant: "destructive",
+        });
       }
-    };
-
-    fetchCompletedLabs();
-  }, []);
-
-  if (loading) {
-    return <p className="text-center text-gray-500">Loading completed labs...</p>;
-  }
-
-  if (error) {
-    return <p className="text-center text-red-500">{error}</p>;
-  }
+    } catch (err) {
+      console.error("Error updating lab completion:", err);
+      toast({
+        title: "Error",
+        description: "Failed to update lab completion status.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (labs.length === 0) {
     return (
@@ -115,7 +58,7 @@ const CompletedLabs = () => {
 
       <div className="space-y-3">
         {[...labs]
-          .sort((a, b) => new Date(b.completedDate).getTime() - new Date(a.completedDate).getTime())
+          .sort((a, b) => b.completedDate.getTime() - a.completedDate.getTime())
           .map(({ lab, completedDate }) => (
             <Card key={lab.id} className="hover:shadow-md transition-all duration-200">
               <CardContent className="p-4">
@@ -129,18 +72,11 @@ const CompletedLabs = () => {
                           {lab.category}
                         </Badge>
                         <span className="text-xs text-gray-500">
-                          Completed {formatDate(completedDate)}
+                          Completed {formatDate(completedDate.toString())}
                         </span>
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => markLabAsCompleted(lab.id)}
-                    className="ml-4 text-blue-500 hover:text-blue-700"
-                  >
-                    <RefreshCw className="h-5 w-5 inline-block mr-1" />
-                    Update Status
-                  </button>
                 </div>
               </CardContent>
             </Card>

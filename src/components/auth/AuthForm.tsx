@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { login, register } from "@/utils/authUtils";
 
 const AuthForm = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -41,24 +43,16 @@ const AuthForm = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        localStorage.setItem("token", data.token);
-        toast({ title: "Account created successfully", description: "Welcome to WebSecLearn!" });
-        navigate("/dashboard");
-      } else {
-        toast({ title: "Registration failed", description: data.message });
-      }
-    } catch (err) {
+      await register(name, email, password);
+      toast({ title: "Account created successfully", description: "Welcome to WebSecLearn!" });
+      
+      // Trigger a storage event to update navbar state
+      window.dispatchEvent(new Event('storage'));
+      
+      navigate("/dashboard");
+    } catch (err: any) {
       console.error("Registration error:", err);
-      toast({ title: "Error", description: "Something went wrong." });
+      toast({ title: "Registration failed", description: err.message || "Something went wrong." });
     } finally {
       setIsLoading(false);
     }
@@ -73,24 +67,16 @@ const AuthForm = () => {
     const password = (document.getElementById("password") as HTMLInputElement).value;
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        localStorage.setItem("token", data.token);
-        toast({ title: "Logged in successfully", description: "Welcome back!" });
-        navigate("/dashboard");
-      } else {
-        toast({ title: "Login failed", description: data.message });
-      }
-    } catch (err) {
+      await login(email, password);
+      toast({ title: "Logged in successfully", description: "Welcome back!" });
+      
+      // Trigger a storage event to update navbar state
+      window.dispatchEvent(new Event('storage'));
+      
+      navigate("/dashboard");
+    } catch (err: any) {
       console.error("Login error:", err);
-      toast({ title: "Error", description: "Something went wrong." });
+      toast({ title: "Login failed", description: err.message || "Something went wrong." });
     } finally {
       setIsLoading(false);
     }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Award, Clock, TrendingUp } from "lucide-react";
 import { Progress } from "@/components/ui/progress"; 
@@ -11,124 +11,14 @@ interface ProgressStatsProps {
   currentStreak: number;
 }
 
-const ProgressStats = () => {
-  const [progress, setProgress] = useState<ProgressStatsProps | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    // Function to fetch progress
-    const fetchProgress = async () => {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        setError("Unauthorized. Please login.");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const res = await fetch("http://localhost:5000/api/progress", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!res.ok) {
-          if (res.status === 401) {
-            setError("Unauthorized. Please log in again.");
-            localStorage.removeItem("token");
-          } else {
-            throw new Error("Failed to fetch progress data.");
-          }
-        }
-
-        const data = await res.json();
-        setProgress(data); 
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("An error occurred");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProgress();
-  }, []);
-
-  useEffect(() => {
-    
-    const completedLabs = 5;  
-    const earnedBadges = 2;   
-    const totalHours = 10;    
-    const currentStreak = 3;  
-
-    
-    updateProgress(completedLabs, earnedBadges, totalHours, currentStreak);
-  }, []);
-
-  const updateProgress = async (completedLabs: number, earnedBadges: number, totalHours: number, currentStreak: number) => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      setError("Unauthorized. Please login.");
-      return;
-    }
-
-    try {
-      const res = await fetch("http://localhost:5000/api/progress/update-lab", {
-        method: "POST",  // POST method for updating progress
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          completedLabs,
-          earnedBadges,
-          totalHours,
-          currentStreak,
-        }), 
-      });
-
-      if (!res.ok) {
-        if (res.status === 401) {
-          setError("Unauthorized. Please log in again.");
-          localStorage.removeItem("token");
-        } else {
-          throw new Error("Failed to update progress.");
-        }
-      }
-
-      const data = await res.json();
-      setProgress(data); 
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("An error occurred");
-      }
-    }
-  };
-
-  if (loading) {
-    return <p className="text-center text-gray-500">Loading your progress...</p>;
-  }
-
-  if (error) {
-    return <p className="text-center text-red-500">{error}</p>;
-  }
-
-  if (!progress) {
-    return <p className="text-center text-gray-500">No progress data available.</p>;
-  }
-
-  const { completedLabs, totalLabs, earnedBadges, totalHours, currentStreak } = progress;
-  const completionPercentage = Math.round((completedLabs / totalLabs) * 100);
+const ProgressStats = ({ 
+  completedLabs, 
+  totalLabs, 
+  earnedBadges, 
+  totalHours, 
+  currentStreak 
+}: ProgressStatsProps) => {
+  const completionPercentage = totalLabs > 0 ? Math.round((completedLabs / totalLabs) * 100) : 0;
 
   return (
     <div className="space-y-6">

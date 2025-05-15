@@ -1,7 +1,9 @@
+
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import { isAuthenticated, logout } from "@/utils/authUtils";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -9,14 +11,29 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
+    const checkAuth = async () => {
+      const authenticated = await isAuthenticated();
+      setIsLoggedIn(authenticated);
+    };
+    
+    checkAuth();
+    
+    // Listen for authentication changes
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'webseclearn_token') {
+        checkAuth();
+      }
+    });
+    
+    return () => {
+      window.removeEventListener('storage', () => {});
+    };
   }, []);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const handleSignOut = () => {
-    localStorage.removeItem("token");
+    logout();
     setIsLoggedIn(false);
     navigate("/auth");
   };
